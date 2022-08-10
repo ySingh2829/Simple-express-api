@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>My App</title>
+    </head>
+
+    <body>
+        <h1>MY APP</h1>
+        <ol id ='todo'>
+
+        </ol>
+        <button id = 'createButton'>Add Todo!</button>
+    </body>
+
+    <script>
+        const createButton = document.getElementById("createButton");
+        createButton.addEventListener("click", async e => {
+                    const jsonRequest = {};
+                    jsonRequest.todo = prompt("Enter text here");
+                    const result = await fetch("http://localhost:8080/todos", {method: "POST", headers: {"content-type": "application/json"}, body: JSON.stringify(jsonRequest)});
+                    const success = await result.json();
+                    readFromTodo();
+                    alert("Created");
+                });
+        readFromTodo();
+        async function readFromTodo() {
+                    try {
+                                const todo = document.getElementById("todo");
+                                while(todo.firstChild) todo.removeChild(todo.firstChild);
+
+                                const result = await fetch("http://localhost:8080/todos", {method: "GET"})
+                                const todos = await result.json();
+                                todos.forEach(item => {
+                                            const li = document.createElement("li");
+                                            li.textContent = item.text;
+                                            li.id = item.id;
+                                            li.addEventListener("click", async e => {
+                                                        const jsonRequest = {};
+                                                        jsonRequest.id = e.target.id;
+                                                        const result = await fetch("http://localhost:8080/todos", {method: "DELETE", headers: {"content-type": "application/json"}, body: JSON.stringify(jsonRequest)})
+                                                        const success = await result.json();
+                                                        if (result.success == false) alert("Failed!");
+                                                        readFromTodo();
+                                                    });
+                                            todo.appendChild(li);
+                                });
+
+                            } catch(e) {
+                                        console.log(`Error reading the todos: ${e}`);
+                                    }
+                }
+    </script>
+</html>
